@@ -1,87 +1,146 @@
+### This is a working test illustrating how designs should be input to the analysis tool
+
+## Step 1: Input all the points representing joints or member ends
+# Name the points so that they can be referenced later
+
+#trussModel:
+#  name: ""
+
 points:
-  - !Point
-    id: 1
+  - !Point &1
+    name: 1
     x: 0
     y: 0.05
-  - !Point
-    id: 2
+  - !Point &2
+    name: 2
     x: -1
     y: 0
-  - !Point
-    id: 3
-    x: -1 * np.cos(45 * np.pi / 180.)
-    y: 1 * np.sin(45 * np.pi / 180.)
-  - !Point
-    id: 4
+  - !Point &3
+    name: 3
+    x: -0.707
+    y: 0.707
+  - !Point &4
+    name: 4
     x: 0
     y: 1
-  - !Point
-    id: 5
-    x: -1 * np.cos(45 * np.pi / 180.)
-    y: 1 * np.sin(45 * np.pi / 180.)
-  - !Point
-    id: 6
+  - !Point &5
+    name: 5
+    x: 0.707
+    y: 0.707
+  - !Point &6
+    name: 6
     x: 1
     y: 0
 
+## Step 2: Define the elements as pieces which span between the points defined.
+# Reference the defined points using '*'
+# The material parameters must also be input including elastic modulus and cross-sectional area.
 elements:
-  - !Element
-    id: tubeA
-    start: 1 # Which set of 2 point ids does this element span?
-    end: 2
-    E: 30E6 # Modulus of elasticity
+  # The following elements represent the aluminum tubing
+  - !Element &tubeA
+    name: tubeA
+    start: *1 # Which set of 2 point names does this element span?
+    end: *2
+    E: 300 # Modulus of elasticity
     A: 2 # Cross-sectional area (Please use SI for the love of god)
+  - !Element &tubeB
+    name: tubeB
+    start: *1
+    end: *3
+    E: 300
+    A: 2
+  - !Element &tubeC
+    name: tubeC
+    start: *1
+    end: *4
+    E: 300
+    A: 2
+  - !Element &tubeD
+    name: tubeD
+    start: *1
+    end: *5
+    E: 300
+    A: 2
+  - !Element &tubeE
+    name: tubeE
+    start: *1
+    end: *6
+    E: 300
+    A: 2
+  # The following elements represent tarp segments
+  # These will need unique material properties also
   - !Element
-    id: tubeB
-    start: 1
-    end: 2
-    E: 30E6
+    name: tarpA
+    start: *2
+    end: *3
+    E: 300
     A: 2
   - !Element
-    id: tubeC
-    start: 1
-    end: 2
-    E: 30E6
+    name: tarpB
+    start: *3
+    end: *4
+    E: 300
     A: 2
   - !Element
-    id: tubeD
-    start: 1
-    end: 2
-    E: 30E6
+    name: tarpC
+    start: *4
+    end: *5
+    E: 300
     A: 2
   - !Element
-    id: tubeE
-    start: 1
-    end: 2
-    E: 30E6
+    name: tarpD
+    start: *5
+    end: *6
+    E: 300
     A: 2
-  - !Element
-    id: # TODO: Add tarp elements
 
+## Step 3: Input the applied forces to the desired points.
+# Describe the loads that the frame will be subjected to.
+# Include x and y components of magnitude as well as the point which the force will be applied to.
 forces:
   - !Force
-    point: 3
+    name: load1
+    point: *3
     x: 0
     y: -10 # x and y magnitudes of the applied forces
   - !Force
-    point: 4
+    name: load2
+    point: *4
     x: 0
     y: -10
   - !Force
-    point: 5
+    name: load3
+    point: *5
     x: 0
     y: -10
 
+## Step 4: Input the constraints describing the frame environment.
+# Include the point which is being constrained as well as the directions it is being constrained in.
 constraints:
   - !Constraint # Center pin connection constraint
-    point: 1
-    x: True # Is motion constrained in the x and y directions?
-    y: True
-  - !Constraint # Side contact constraints
-    point: 2
-    x: True
-    y: False
+    name: leftConst
+    point: *1
+    x: 1 # Is motion constrained in the x and y directions?
+    y: 1
+  - !Constraint #contact constraints
+    name: centerConst
+    point: *2
+    x: 0
+    y: 1
   - !Constraint
-    point: 6
-    x: True
-    y: False
+    name: rightConst
+    point: *6
+    x: 0
+    y: 1
+
+pin: !Pin
+  name: jesusNut
+  length: 50
+  E: 300 # Elastic modulus
+  I: 50 # Second moment of inertia
+  elements:
+    - *tubeA
+    - *tubeB
+    - *tubeC
+    - *tubeD
+    - *tubeE
