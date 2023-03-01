@@ -110,7 +110,7 @@ def test2(forces=None):
     pinModel.add_constraint(n7, uy=0)  # roller support
 
     pinModel.plot_model()
-    plt.title("Pin Beam Model", fontsize=13)
+    plt.title("Beam Pin Model", fontsize=13)
 
     pinModel.solve()  # Solve model
     print(n4.uy)  # Example output of the deflection along the pin
