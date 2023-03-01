@@ -8,7 +8,7 @@ def test1():
     # These units make me sad but they were the defaults in the examples.
     # All the material parameters can be fixed later.
     # Input data
-    E = 30e6  # psi
+    E = 30e6  # psi # TODO: Update material parameters to match the tubing material
     A = 2.0  # in^2
     P = 10e3  # lbf
 
@@ -53,15 +53,15 @@ def test1():
     trussModel.add_constraint(n2, uy=0)  # fixed
     trussModel.add_constraint(n6, uy=0)  # fixed
 
-    plt.title("Deformed Truss Model for Car Shelter", fontsize=13)
     trussModel.plot_model()
+    plt.title("Truss Car Shelter Model", fontsize=13)
 
     trussModel.solve()  # Solve model
 
     print(t1.f)  # Example of the force output from the beams
 
     trussModel.plot_deformed_shape()  # plot deformed shape
-    plt.title("Deformed Truss Model for Car Shelter", fontsize=13)
+    plt.title("Truss Model Deformation", fontsize=13)
 
     trussModel.show()
 
@@ -72,7 +72,7 @@ def test2(forces=None):
     # Now create a model for the pin to analyze the forces on the pin
 
     # Input data
-    E = 300
+    E = 300  # TODO: Update material parameters to match the pin material
     I = 50.0
     P = 10e2
     L = 10
@@ -110,19 +110,24 @@ def test2(forces=None):
     pinModel.add_constraint(n7, uy=0)  # roller support
 
     pinModel.plot_model()
-    plt.title("Pin Force Diagram", fontsize=13)
+    plt.title("Pin Beam Model", fontsize=13)
 
     pinModel.solve()  # Solve model
     print(n4.uy)  # Example output of the deflection along the pin
 
     pinModel.plot_disp(df=100)  # df = deformation factor
-    plt.title("Pin Displacement Illustration", fontsize=13)
+    plt.title("Beam Model Deformation", fontsize=13)
     pinModel.show()
 
 
 if __name__ == '__main__':
     plt.rcParams["font.family"] = "Noto Serif CJK JP"
 
+    # TODO: Add a yaml parser to feed our geometry / material parameters with an input file instead of the source code
+
     f1, f2, f3, f4, f5 = test1()  # Run test one and give the outputs to the pin calculation
-    test2([f1, f2, f3, f4, f5])  # Need to add geometric information about force direction
+    test2([f1, f2, f3, f4, f5])  # TODO: Need to add geometric information about force direction
     # Preferably the geometry input would be automated through a yaml file for easy alteration
+
+    # TODO: Eventually we will want to solve for a factor of safety and run multiple benchmark cases
+    # TODO: This includes snow loading and wind shear
