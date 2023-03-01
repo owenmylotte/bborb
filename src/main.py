@@ -1,6 +1,9 @@
+import pathlib
+import yaml
 import matplotlib.pyplot as plt  # for plotting
 import pandas as pd
 import numpy as np
+import argparse
 from nusa import *
 
 
@@ -121,7 +124,26 @@ def test2(forces=None):
 
 
 if __name__ == '__main__':
-    plt.rcParams["font.family"] = "Noto Serif CJK JP"
+    # Input argument parser used to point to a yaml file.
+    parser = argparse.ArgumentParser(
+        description='Structural analysis tool for portable car shelter. '
+                    'See https://github.com/owenmylotte/bborb'
+                    ' for details.  ')
+    parser.add_argument('--input', dest='input_file', type=pathlib.Path, required=True,
+                        help='The path to the yaml input file containing the design geometry.')
+    args = parser.parse_args()
+
+    # Try opening the yaml file that was provided in the input arguments
+    with open(args.input_file) as stream:
+        try:
+            print(yaml.safe_load(stream))
+        except yaml.YAMLError as exc:
+            print(exc)
+
+    for key, value in stream.items():
+        print(str(key))
+
+    plt.rcParams["font.family"] = "Noto Serif CJK JP"  # Set the font for plotting.
 
     # TODO: Add a yaml parser to feed our geometry / material parameters with an input file instead of the source code
 

@@ -1,0 +1,87 @@
+points:
+  - !Point
+    id: 1
+    x: 0
+    y: 0.05
+  - !Point
+    id: 2
+    x: -1
+    y: 0
+  - !Point
+    id: 3
+    x: -1 * np.cos(45 * np.pi / 180.)
+    y: 1 * np.sin(45 * np.pi / 180.)
+  - !Point
+    id: 4
+    x: 0
+    y: 1
+  - !Point
+    id: 5
+    x: -1 * np.cos(45 * np.pi / 180.)
+    y: 1 * np.sin(45 * np.pi / 180.)
+  - !Point
+    id: 6
+    x: 1
+    y: 0
+
+elements:
+  - !Element
+    id: tubeA
+    start: 1 # Which set of 2 point ids does this element span?
+    end: 2
+    E: 30E6 # Modulus of elasticity
+    A: 2 # Cross-sectional area (Please use SI for the love of god)
+  - !Element
+    id: tubeB
+    start: 1
+    end: 2
+    E: 30E6
+    A: 2
+  - !Element
+    id: tubeC
+    start: 1
+    end: 2
+    E: 30E6
+    A: 2
+  - !Element
+    id: tubeD
+    start: 1
+    end: 2
+    E: 30E6
+    A: 2
+  - !Element
+    id: tubeE
+    start: 1
+    end: 2
+    E: 30E6
+    A: 2
+  - !Element
+    id: # TODO: Add tarp elements
+
+forces:
+  - !Force
+    point: 3
+    x: 0
+    y: -10 # x and y magnitudes of the applied forces
+  - !Force
+    point: 4
+    x: 0
+    y: -10
+  - !Force
+    point: 5
+    x: 0
+    y: -10
+
+constraints:
+  - !Constraint # Center pin connection constraint
+    point: 1
+    x: True # Is motion constrained in the x and y directions?
+    y: True
+  - !Constraint # Side contact constraints
+    point: 2
+    x: True
+    y: False
+  - !Constraint
+    point: 6
+    x: True
+    y: False
