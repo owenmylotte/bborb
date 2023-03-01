@@ -2,10 +2,8 @@
 
 ## Step 1: Input all the points representing joints or member ends
 # Name the points so that they can be referenced later
-
-#trussModel:
-#  name: ""
-
+# & is to define a yaml variable
+# * is to reference the yaml variable
 points:
   - !Point &1
     name: 1
