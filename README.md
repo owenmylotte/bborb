@@ -1,5 +1,21 @@
 # bborb
 
+## User Instructions
+The design analysis tool uses .yaml input to construct the desired geometry.
+Example yaml inputs can be found under tests.
+
+In the bborb directory, use this command to run your design:
+
+`python src/main.py --input /path/to/your/input/file`
+
+To run a test such as "snowLoadTest.yaml" or example problem, use:
+
+`python src/main.py --input ../bborb/tests/snowLoadTest.yaml`
+
+or
+
+`python src/main.py --input ../bborb/tests/windShearTest.yaml`
+
 ## Portable Car Shelter Design 
 
 Vehicle shelter is important to many peoples’ personal quality of life.
