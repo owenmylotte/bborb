@@ -99,20 +99,15 @@ elements:
 # Include x and y components of magnitude as well as the point which the force will be applied to.
 forces:
   - !Force
-    name: load1
-    point: *3
-    x: 0
-    y: -10 # x and y magnitudes of the applied forces
-  - !Force
     name: load2
     point: *4
-    x: 0
-    y: -10
+    x: -10
+    y: 0
   - !Force
     name: load3
     point: *5
-    x: 0
-    y: -10
+    x: -50
+    y: 0
 
 ## Step 4: Input the constraints describing the frame environment.
 # Include the point which is being constrained as well as the directions it is being constrained in.
