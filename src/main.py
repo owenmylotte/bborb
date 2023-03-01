@@ -27,7 +27,8 @@ class Force(yaml.YAMLObject):
         self.x = x
         self.y = y
 
-    # def __repr__(self): # TODO: This can be used to write out optimized geometries.
+    # # This can be used to write out optimized geometries. Save for later
+    # def __repr__(self):
     #     return "%s(name=%r, point=%r, x=%r, y=%r)" % (self.__class__.__name__, self.name, self.point, self.x, self.y)
 
 
@@ -94,36 +95,9 @@ def get_loader():
     return loader
 
 
-def test1(data):
-    # These units make me sad but they were the defaults in the examples.
-    # All the material parameters can be fixed later.
-    # Input data
-    # E = 30e6  # psi # TODO: Update material parameters to match the tubing material
-    # A = 2.0  # in^2
-    # P = 10e3  # lbf
-
+def trussSolve(data):
     # Model
     trussModel = TrussModel("Truss Model")
-
-    # # I would rather put in a yaml parser to define the elements and point locations.
-    # # That way we can clean this up.
-    # # Nodes
-    # n1 = Node((0, 0.05))  # Main pin connection
-    # n2 = Node((-1, 0))  # First truss end point, etc.
-    # n3 = Node((-1 * np.cos(45 * np.pi / 180.), 1 * np.sin(45 * np.pi / 180.)))
-    # n4 = Node((0, 1))
-    # n5 = Node((1 * np.cos(45 * np.pi / 180.), 1 * np.sin(45 * np.pi / 180.)))
-    # n6 = Node((1, 0))
-    # # Elements
-    # b1 = Truss((n1, n2), E, A)
-    # b2 = Truss((n1, n3), E, A)
-    # b3 = Truss((n1, n4), E, A)
-    # b4 = Truss((n1, n5), E, A)
-    # b5 = Truss((n1, n6), E, A)
-    # t1 = Truss((n2, n3), E, A)
-    # t2 = Truss((n3, n4), E, A)
-    # t3 = Truss((n4, n5), E, A)
-    # t4 = Truss((n5, n6), E, A)
 
     # Add elements
     for nd in data['points']:
@@ -137,8 +111,6 @@ def test1(data):
     for fc in data['forces']:
         trussModel.add_force(fc.point.node, (fc.x, fc.y))
 
-    # Supports where it touches the ground. There are no horizontal forces (unless we want wind shear)
-    # If we wanted to be more accurate, we could horizontally fix it at out anchor point.
     for cnst in data['constraints']:
         if ((cnst.x == True) and (cnst.y == True)):
             trussModel.add_constraint(cnst.point.node, ux=0, uy=0)  # fixed in both x and y
@@ -161,17 +133,16 @@ def test1(data):
 
     trussModel.show()
 
-    # return b1.f, b2.f, b3.f, b4.f, b5.f
 
-
-def test2(data):
+def pinSolve(data):
     # Now create a model for the pin to analyze the forces on the pin
 
     pinModel = BeamModel("Pin Model")
 
     nodes = np.zeros((len(data['pin'].elements) + 2), dtype=Node)
     elements = np.zeros(len(nodes) - 1, dtype=Element)
-    nodePositions = np.linspace(0, data['pin'].length, (len(data['pin'].elements) + 2), dtype=float)  # Leave room for the end
+    nodePositions = np.linspace(0, data['pin'].length, (len(data['pin'].elements) + 2),
+                                dtype=float)  # Leave room for the end
     for i in range(1, len(nodes) - 1):
         nodes[i] = Node((nodePositions[i], 0))
     nodes[0] = Node((0, 0))
@@ -189,7 +160,7 @@ def test2(data):
     for i in range(len(data['pin'].elements)):
         pinModel.add_force(nodes[i + 1], (data['pin'].elements[i].truss.f,))
 
-    # I'm not sure if this is how we want to define the forces on the bracket
+    # I'm not sure if this is how we want to define the constraints on the bracket?
     pinModel.add_constraint(nodes[0], ux=0, uy=0)  # fixed
     pinModel.add_constraint(nodes[len(nodes) - 1], uy=0)  # roller support
 
@@ -213,20 +184,13 @@ if __name__ == '__main__':
                         help='The path to the yaml input file containing the design geometry.')
     args = parser.parse_args()
 
-    data = yaml.load(open(args.input_file, "rb"), Loader=get_loader())
-
-    # TODO: Add a yaml parser to feed our geometry / material parameters with an input file instead of the source code
-
-    # for key, value in stream.items():
-    #     if (key == "!Force"):
-    #         for i in range(len(key)):
-    #             print(value[i])
+    data = yaml.load(open(args.input_file, "rb"), Loader=get_loader())  # Open the input file
 
     plt.rcParams["font.family"] = "Noto Serif CJK JP"  # Set the font for plotting.
 
-    test1(data)  # Run test one and give the outputs to the pin calculation
-    test2(data)  # TODO: Need to add geometric information about force direction
-    # Preferably the geometry input would be automated through a yaml file for easy alteration
+    trussSolve(data)  # Runs the truss model of the strut and tarp system
+    pinSolve(data)  # Solves the pin beam problem
 
-    # TODO: Eventually we will want to solve for a factor of safety and run multiple benchmark cases
-    # TODO: This includes snow loading and wind shear
+    # TODO: Eventually we will want to solve for a factor of safety and run multiple benchmark cases.
+    # TODO: This includes snow loading, wind shear, and other cases potentially.
+    # TODO: Implementing an optimization / solve on the component parameters is also an option.
