@@ -87,42 +87,56 @@ elements:
     A: 0.00038
   # The following elements represent tarp segments
   # These will need unique material properties also
-  - !Element
+
+tarps:
+  - !Tarp
     name: tarpA
     start: *2
     end: *3
     E: 300
     A: 2
-  - !Element
+    nodecount: 1
+    load: 10
+  - !Tarp
     name: tarpB
     start: *3
     end: *4
     E: 300
     A: 2
-  - !Element
+    nodecount: 1
+    load: 10
+  - !Tarp
     name: tarpC
     start: *4
     end: *5
     E: 300
     A: 2
-  - !Element
+    nodecount: 1
+    load: 10
+  - !Tarp
     name: tarpD
     start: *5
     end: *6
     E: 300
     A: 2
-  - !Element
+    nodecount: 1
+    load: 10
+  - !Tarp
     name: tarpE
     start: *6
     end: *7
     E: 300
     A: 2
-  - !Element
+    nodecount: 1
+    load: 10
+  - !Tarp
     name: tarpF
     start: *7
     end: *8
     E: 300
     A: 2
+    nodecount: 1
+    load: 10
 
 ## Step 3: Input the applied forces to the desired points.
 # Describe the loads that the frame will be subjected to.

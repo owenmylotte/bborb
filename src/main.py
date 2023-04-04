@@ -63,17 +63,23 @@ class Tarp(yaml.YAMLObject):
         self.end = end
         self.elasticModulus = E
         self.sectionArea = A
-        self.truss = np.zeros(nodecount + 1, Truss)  # Elements in the tarp
-        self.nodes = np.zeros(nodecount, Node)  # Points in between the tarp ends
+        self.load = load
+        self.nodecount = nodecount
+        self.truss = np.zeros(nodecount + 1, dtype=Truss)  # Elements in the tarp
+        self.nodes = np.zeros(nodecount, dtype=Node)  # Points in between the tarp ends
         for i in range(nodecount):  # Create all the nodes in between the input start and end
-            self.nodes[i].x = self.start.x + (self.end.x - self.start.x) * (i + 1 / self.nodecount + 2)
-            self.nodes[i].y = self.start.y + (self.end.y - self.start.y) * (i + 1 / self.nodecount + 2)
+            x = self.start.x + (self.end.x - self.start.x) * ((i + 1) / (self.nodecount + 1))
+            y = self.start.y + (self.end.y - self.start.y) * ((i + 1) / (self.nodecount + 1))
+            self.nodes[i] = Node((x, y))
 
-        self.truss[0] = Truss((self.start.node, self.end.node), self.elasticModulus, self.sectionArea)
-        for i in range(1, nodecount - 1):
-            self.truss[i] = Truss((self.start.node, self.end.node), self.elasticModulus, self.sectionArea)
-
-            # Put the load on each of the nodes
+        trussNodes = (self.start.node, self.nodes[0])
+        self.truss[0] = Truss(trussNodes, self.elasticModulus, self.sectionArea)
+        for i in range(nodecount - 1):
+            trussNodes = (self.nodes[i], self.nodes[i + 1])
+            self.truss[i] = Truss(trussNodes, self.elasticModulus, self.sectionArea)
+        trussNodes = (self.nodes[nodecount - 1], self.end.node)
+        self.truss[nodecount] = Truss(trussNodes, self.elasticModulus,
+                                      self.sectionArea)
 
 
 class Point(yaml.YAMLObject):
@@ -98,6 +104,10 @@ def element_constructor(loader: yaml.SafeLoader, node: yaml.nodes.MappingNode) -
     return Element(**loader.construct_mapping(node))
 
 
+def tarp_constructor(loader: yaml.SafeLoader, node: yaml.nodes.MappingNode) -> Tarp:
+    return Tarp(**loader.construct_mapping(node))
+
+
 def force_constructor(loader: yaml.SafeLoader, node: yaml.nodes.MappingNode) -> Force:
     return Force(**loader.construct_mapping(node))
 
@@ -114,6 +124,7 @@ def get_loader():
     loader.add_constructor("!Element", element_constructor)
     loader.add_constructor("!Force", force_constructor)
     loader.add_constructor("!Pin", pin_constructor)
+    loader.add_constructor("!Tarp", tarp_constructor)
     return loader
 
 
@@ -128,14 +139,25 @@ def trussSolve(data):
         trussModel.add_element(el.truss)
 
     # How we define the load depends on how we want to try modelling the snow
-    # Getting the tarp sag accurate would require discretizing the tarp into a cloth sim
-    # and I don't know if I'm up for that right now unless someone is feeling the heat.
     for fc in data['forces']:
         trussModel.add_force(fc.point.node, (fc.x, fc.y))
 
     for tarp in data["tarps"]:
         for i in range(tarp.nodecount):
-            trussModel.add_force(tarp.nodes[i], (0, tarp.load / tarp.nodecount))  # Apply portion of tarp load to nodes
+            trussModel.add_node(tarp.nodes[i])
+            trussModel.add_constraint(tarp.nodes[i], ux=0)  # fixed in both x and y
+
+        for i in range(tarp.nodecount + 1):
+            trussModel.add_element(tarp.truss[i])
+
+    trussModel.plot_model()
+    trussModel.show()
+
+    for tarp in data["tarps"]:
+        for i in range(tarp.nodecount):
+            # trussModel.add_constraint(tarp.nodes[i], ux=0)  # fixed in both x and y
+            trussModel.add_force(tarp.nodes[i],
+                                 (0, -10))  # Apply portion of tarp load to nodes (tarp.load / tarp.nodecount)
 
     for cnst in data['constraints']:
         if ((cnst.x == True) and (cnst.y == True)):
