@@ -54,6 +54,28 @@ class Element(yaml.YAMLObject):
         self.truss = Truss((self.start.node, self.end.node), self.elasticModulus, self.sectionArea)
 
 
+class Tarp(yaml.YAMLObject):
+    YAMLTag = u"!Tarp"
+
+    def __init__(self, name, start, end, E, A, nodecount, load):
+        self.name = name
+        self.start = start
+        self.end = end
+        self.elasticModulus = E
+        self.sectionArea = A
+        self.truss = np.zeros(nodecount + 1, Truss)  # Elements in the tarp
+        self.nodes = np.zeros(nodecount, Node)  # Points in between the tarp ends
+        for i in range(nodecount):  # Create all the nodes in between the input start and end
+            self.nodes[i].x = self.start.x + (self.end.x - self.start.x) * (i + 1 / self.nodecount + 2)
+            self.nodes[i].y = self.start.y + (self.end.y - self.start.y) * (i + 1 / self.nodecount + 2)
+
+        self.truss[0] = Truss((self.start.node, self.end.node), self.elasticModulus, self.sectionArea)
+        for i in range(1, nodecount - 1):
+            self.truss[i] = Truss((self.start.node, self.end.node), self.elasticModulus, self.sectionArea)
+
+            # Put the load on each of the nodes
+
+
 class Point(yaml.YAMLObject):
     YAMLTag = u"!Point"
 
@@ -111,6 +133,10 @@ def trussSolve(data):
     for fc in data['forces']:
         trussModel.add_force(fc.point.node, (fc.x, fc.y))
 
+    for tarp in data["tarps"]:
+        for i in range(tarp.nodecount):
+            trussModel.add_force(tarp.nodes[i], (0, tarp.load / tarp.nodecount))  # Apply portion of tarp load to nodes
+
     for cnst in data['constraints']:
         if ((cnst.x == True) and (cnst.y == True)):
             trussModel.add_constraint(cnst.point.node, ux=0, uy=0)  # fixed in both x and y
@@ -139,7 +165,6 @@ def trussSolve(data):
         Ielem = np.pi * 0.5 * (r2 * r2 - r1 * r1)
         Fcrit = (np.pi * np.pi * el.truss.E * Ielem) / (length)
         print(el.name + ": " + str(el.truss.s) + " : Buckling Failure? : " + str(Fcrit < abs(el.truss.f)))
-
 
     trussModel.plot_deformed_shape()  # plot deformed shape
     plt.title("Truss Model Deformation", fontsize=13)
@@ -205,7 +230,6 @@ if __name__ == '__main__':
 
     trussSolve(data)  # Runs the truss model of the strut and tarp system
     pinSolve(data)  # Solves the pin beam problem
-
 
     # TODO: Eventually we will want to solve for a factor of safety and run multiple benchmark cases.
     # TODO: This includes snow loading, wind shear, and other cases potentially.
