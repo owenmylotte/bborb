@@ -15,18 +15,26 @@ points:
     y: 0
   - !Point &3
     name: 3
-    x: -0.707
-    y: 0.707
+    x: -0.866
+    y: 0.5
   - !Point &4
     name: 4
-    x: 0
-    y: 1
+    x: -0.5
+    y: 0.866
   - !Point &5
     name: 5
-    x: 0.707
-    y: 0.707
+    x: 0
+    y: 1
   - !Point &6
     name: 6
+    x: 0.5
+    y: 0.866
+  - !Point &7
+    name: 7
+    x: 0.866
+    y: 0.5
+  - !Point &8
+    name: 8
     x: 1
     y: 0
 
@@ -39,32 +47,44 @@ elements:
     name: tubeA
     start: *1 # Which set of 2 point names does this element span?
     end: *2
-    E: 300 # Modulus of elasticity
-    A: 2 # Cross-sectional area (Please use SI for the love of god)
+    E: 69000000000 # Modulus of elasticity
+    A: 0.00038 # Cross-sectional area (Please use SI for the love of god)
   - !Element &tubeB
     name: tubeB
     start: *1
     end: *3
-    E: 300
-    A: 2
+    E: 69000000000
+    A: 0.00038
   - !Element &tubeC
     name: tubeC
     start: *1
     end: *4
-    E: 300
-    A: 2
+    E: 69000000000
+    A: 0.00038
   - !Element &tubeD
     name: tubeD
     start: *1
     end: *5
-    E: 300
-    A: 2
+    E: 69000000000
+    A: 0.00038
   - !Element &tubeE
     name: tubeE
     start: *1
     end: *6
-    E: 300
-    A: 2
+    E: 69000000000
+    A: 0.00038
+  - !Element &tubeF
+    name: tubeE
+    start: *1
+    end: *7
+    E: 69000000000
+    A: 0.00038
+  - !Element &tubeG
+    name: tubeE
+    start: *1
+    end: *8
+    E: 69000000000
+    A: 0.00038
   # The following elements represent tarp segments
   # These will need unique material properties also
   - !Element
@@ -91,26 +111,58 @@ elements:
     end: *6
     E: 300
     A: 2
+  - !Element
+    name: tarpE
+    start: *6
+    end: *7
+    E: 300
+    A: 2
+  - !Element
+    name: tarpF
+    start: *7
+    end: *8
+    E: 300
+    A: 2
 
 ## Step 3: Input the applied forces to the desired points.
 # Describe the loads that the frame will be subjected to.
 # Include x and y components of magnitude as well as the point which the force will be applied to.
 forces:
   - !Force
+    name: load3
+    point: *2
+    x: 0
+    y: -28.57
+  - !Force
     name: load1
     point: *3
     x: 0
-    y: -10 # x and y magnitudes of the applied forces
+    y: -28.57 # x and y magnitudes of the applied forces
   - !Force
     name: load2
     point: *4
     x: 0
-    y: -10
+    y: -28.57
   - !Force
     name: load3
     point: *5
     x: 0
-    y: -10
+    y: -28.57
+  - !Force
+    name: load4
+    point: *6
+    x: 0
+    y: -28.57
+  - !Force
+    name: load5
+    point: *7
+    x: 0
+    y: -28.57
+  - !Force
+    name: load5
+    point: *8
+    x: 0
+    y: -28.57
 
 ## Step 4: Input the constraints describing the frame environment.
 # Include the point which is being constrained as well as the directions it is being constrained in.
@@ -127,7 +179,7 @@ constraints:
     y: 1
   - !Constraint
     name: rightConst
-    point: *6
+    point: *8
     x: 0
     y: 1
 
@@ -142,3 +194,5 @@ pin: !Pin
     - *tubeC
     - *tubeD
     - *tubeE
+    - *tubeF
+    - *tubeG

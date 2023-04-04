@@ -128,6 +128,19 @@ def trussSolve(data):
 
     trussModel.solve()  # Solve model
 
+    options = {"headers": "firstrow",
+               "tablefmt": "rst",
+               "numalign": "right"}
+
+    r1 = 0.0127 * 0.5
+    r2 = 0.0127
+    length = 1
+    for el in data['elements']:
+        Ielem = np.pi * 0.5 * (r2 * r2 - r1 * r1)
+        Fcrit = (np.pi * np.pi * el.truss.E * Ielem) / (length)
+        print(el.name + ": " + str(el.truss.s) + " : Buckling Failure? : " + str(Fcrit < abs(el.truss.f)))
+
+
     trussModel.plot_deformed_shape()  # plot deformed shape
     plt.title("Truss Model Deformation", fontsize=13)
 
@@ -170,6 +183,8 @@ def pinSolve(data):
     pinModel.solve()  # Solve model
 
     pinModel.plot_disp(df=100)  # df = deformation factor
+    pinModel.plot_shear_diagram()  # df = deformation factor
+    pinModel.plot_moment_diagram()  # df = deformation factor
     plt.title("Beam Model Deformation", fontsize=13)
     pinModel.show()
 
@@ -190,6 +205,7 @@ if __name__ == '__main__':
 
     trussSolve(data)  # Runs the truss model of the strut and tarp system
     pinSolve(data)  # Solves the pin beam problem
+
 
     # TODO: Eventually we will want to solve for a factor of safety and run multiple benchmark cases.
     # TODO: This includes snow loading, wind shear, and other cases potentially.
